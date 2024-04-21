@@ -1,3 +1,16 @@
+/*
+ * Parses for
+ * <for loop> =:: for(<assignment> ; <condition> ; <increment> | <decrement>) "{" {<arithmetic expression>} "}"
+ *               |for(<assignment> ; <condition> ; <increment> | <decrement>) <arithmetic expression>
+ * <assignment> =:: <data type> <identifier> = <digit>
+ * <condition> =:: <identifier> | digit  < | > | == | >= | <= <identifier> | <digit>
+ * <increment> =:: <digit>|<identifier> ++
+ * <decrement> =:: <digit> | identifier> --
+ * <digit> =:: 0|...|9
+ * <identifier> =:: <letter> {<letter>}
+ * <letter> =:: "a"|...|"Z"
+ */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
@@ -14,16 +27,24 @@ public class ForLoopParser {
         arithmeticParser = new ArithmeticParser(result);
     }
 
+    /*
+     * Parses for
+     * <for loop> =:: for(<assignment> ; <condition> ; <increment> | <decrement>) "{" {<arithmetic expression>} "}"
+     *               |for(<assignment> ; <condition> ; <increment> | <decrement>) <arithmetic expression>
+     */
     public void parseForLoop(String input) throws SyntaxErrorException {
         String temp = "";
         index = 0;
+        //Checks for the "for" keyword first
         parseForKeyword(input);
 
+        //Checks tthe open and closed parenthesis
         if (index < input.length() && input.charAt(index) == '(') {
             temp = "(";
             checkForToken(temp);
             index++;
 
+            //Checks for (<assignment> ; <condition> ; <increment> | <decrement>)
             parseAssignment(input);
             parseSemiColon(input);
             parseCondition(input);
@@ -42,6 +63,11 @@ public class ForLoopParser {
 
         skipForWhiteSpaces(input);
 
+        /*
+         * Checks if we have curly braces or not
+         * Having curly braces allows for multiple java arithmetic expressions
+         * While if there are are no braces, it means only single line of expression is allowed
+         */
         if (index < input.length() && input.charAt(index) == '{') {
             temp = "{";
             checkForToken(temp);
@@ -50,6 +76,10 @@ public class ForLoopParser {
 
             temp = "";
             while (index < input.length() && input.charAt(index) != '}') {
+                /*
+                 * The function to parse arithmetic expressions, utilizes the Arithmetic Parser Class
+                 * Extracts all arithmetic expressions and then parse them one by one.
+                 */
                 while (index < input.length() && input.charAt(index) != ';') {
                     temp += input.charAt(index);
                     index++;
@@ -73,7 +103,6 @@ public class ForLoopParser {
         } else {
 
             temp = "";
-            while (index < input.length() && input.charAt(index) != '}') {
                 while (index < input.length() && input.charAt(index) != ';') {
                     temp += input.charAt(index);
                     index++;
@@ -84,12 +113,11 @@ public class ForLoopParser {
                     temp = "";
                     index++;
                 }
-
-            }
         }
 
     }
 
+    //Checks for the "for" keyword
     public void parseForKeyword(String input) throws SyntaxErrorException {
         skipForWhiteSpaces(input);
         if (index < input.length() && input.substring(index, index + 3).equals("for")) {
@@ -102,12 +130,12 @@ public class ForLoopParser {
         skipForWhiteSpaces(input);
     }
 
+    //Checks for <assignment> =:: <data type> <identifier> = <digit>
     public void parseAssignment(String input) throws SyntaxErrorException {
-        // Implementation...
         String temp = "";
         skipForWhiteSpaces(input);
-        parseDataType(input);
-        parseIdentifier(input);
+        parseDataType(input); //Parses data type
+        parseIdentifier(input); //Parses Identifier
         skipForWhiteSpaces(input);
 
         // if data type -> identifier -> = order
@@ -115,7 +143,7 @@ public class ForLoopParser {
             temp += input.charAt(index);
             checkForToken(temp);
             index++;
-            parseNumber(input);
+            parseNumber(input);//Parses number
         }
         skipForWhiteSpaces(input);
     }
@@ -172,6 +200,10 @@ public class ForLoopParser {
         skipForWhiteSpaces(input);
     }
 
+    /*
+     * Parses for the condition
+     * <condition> =:: <identifier> | digit  < | > | == | >= | <= <identifier> | <digit>
+     */
     public void parseCondition(String input) throws SyntaxErrorException {
         String temp = "";
 
@@ -203,6 +235,7 @@ public class ForLoopParser {
         skipForWhiteSpaces(input);
     }
 
+    //Basically checks increment/decrement operator
     public void parseIncrementOrDecrement(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
