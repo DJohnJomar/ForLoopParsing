@@ -1,3 +1,4 @@
+
 /*
  * The program follows the following BNF:
  * <arithmetic expression> =:: <data type> <identifier> = <expression>;
@@ -17,25 +18,22 @@
  * <digit> =:: "0"| ... | "9"
  * <letter> =:: "a" | ... | "Z"
  */
-    import java.io.BufferedReader;
-    import java.io.InputStreamReader;
-    import java.util.ArrayList;
-    import java.util.HashMap;
-    import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 
-    
 public class ArithmeticParser {
     private HashMap<String, String> map = new HashMap<String, String>();
     private ArrayList<String> result = new ArrayList<String>();
     private int index;
     private boolean hasDataType;
 
-    public ArithmeticParser(ArrayList result){
+    public ArithmeticParser(ArrayList result) {
         setupHashMap();
         this.result = result;
     }
-    
-     /*
+
+    /*
      * Parses for:
      * <arithmetic expression> =:: <data type> <identifier> = <expression>;
      * |<data type> <identifier> += <expression>; // The compounds operators
@@ -93,7 +91,6 @@ public class ArithmeticParser {
         // Parses other terms
         while (index < input.length() && (input.charAt(index) == '+' || input.charAt(index) == '-' || input.charAt(index) == '%')) {
             temp += input.charAt(index);
-            System.out.println("Value in temp must be Addition: "+temp);
             checkForToken(temp);
             index++;
             temp = "";
@@ -155,7 +152,7 @@ public class ArithmeticParser {
         else if (Character.isDigit(input.charAt(index))) {
             parseNumber(input);
 
-            //check for increment/decrement
+            // check for increment/decrement
             if (index + 1 < input.length() && input.charAt(index) == '+' && input.charAt(index + 1) == '+') {
                 temp += "" + input.charAt(index) + input.charAt(index + 1);
                 index += 2;
@@ -165,10 +162,10 @@ public class ArithmeticParser {
                 index += 2;
                 checkForToken(temp);
             }
-        }else {
+        } else {
             // Parses identifier
             parseIdentifier(input);
-            //check for increment/decrement
+            // check for increment/decrement
             if (index + 1 < input.length() && input.charAt(index) == '+' && input.charAt(index + 1) == '+') {
                 temp += "" + input.charAt(index) + input.charAt(index + 1);
                 index += 2;
@@ -230,7 +227,8 @@ public class ArithmeticParser {
         skipForWhiteSpaces(input);
 
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
-            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index)) && input.charAt(index) != '=') {
+            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index))
+                    && input.charAt(index) != '=') {
                 temp += input.charAt(index);
                 index++;
             }
@@ -344,16 +342,14 @@ public class ArithmeticParser {
         map.put(";", "Semicolon");
     }
 
-    public void printTokens(){
+    public void printTokens() {
         System.out.println("\n----- Lexeme : Token Pairs -----\n");
-                for (String str : result) {
-                    System.out.println(str);
-                }
+        for (String str : result) {
+            System.out.println(str);
+        }
     }
 }
 
-
-    
 class SyntaxErrorException extends Exception {
     public SyntaxErrorException(String message) {
         super(message);

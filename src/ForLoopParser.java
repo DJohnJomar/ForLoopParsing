@@ -7,8 +7,6 @@ public class ForLoopParser {
     private HashMap<String, String> map = new HashMap<String, String>();
     private ArrayList<String> result = new ArrayList<String>();
     private int index;
-    private String input;
-    private boolean hasDataType;
     private ArithmeticParser arithmeticParser;
 
     public ForLoopParser() {
@@ -19,7 +17,6 @@ public class ForLoopParser {
     public void parseForLoop(String input) throws SyntaxErrorException {
         String temp = "";
         index = 0;
-        System.out.println("Starting parseForLoop method");
         parseForKeyword(input);
 
         if (index < input.length() && input.charAt(index) == '(') {
@@ -44,7 +41,6 @@ public class ForLoopParser {
         }
 
         skipForWhiteSpaces(input);
-        System.out.println("After parsing assignment, condition, and increment/decrement");
 
         if (index < input.length() && input.charAt(index) == '{') {
             temp = "{";
@@ -56,10 +52,7 @@ public class ForLoopParser {
             while (index < input.length() && input.charAt(index) != '}') {
                 while (index < input.length() && input.charAt(index) != ';') {
                     temp += input.charAt(index);
-                    System.out.println("Current characters in temp: " + temp);
                     index++;
-                    System.out.println("Current index: " + index);
-                    System.out.println(temp);
                 }
                 if (input.charAt(index) == ';') {
                     temp += input.charAt(index);
@@ -83,10 +76,7 @@ public class ForLoopParser {
             while (index < input.length() && input.charAt(index) != '}') {
                 while (index < input.length() && input.charAt(index) != ';') {
                     temp += input.charAt(index);
-                    System.out.println("Current characters in temp: " + temp);
                     index++;
-                    System.out.println("Current index: " + index);
-                    System.out.println(temp);
                 }
                 if (input.charAt(index) == ';') {
                     temp += input.charAt(index);
@@ -98,12 +88,10 @@ public class ForLoopParser {
             }
         }
 
-        System.out.println("Finished parsing the for loop");
     }
 
     public void parseForKeyword(String input) throws SyntaxErrorException {
         skipForWhiteSpaces(input);
-        System.out.println("Parsing for keyword");
         if (index < input.length() && input.substring(index, index + 3).equals("for")) {
             // checkForToken(temp);
             result.add("for : Keyword");
@@ -138,16 +126,13 @@ public class ForLoopParser {
     public void parseDataType(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-        System.out.println("Parsing data type");
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
-            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index))
-                    && input.charAt(index) != '=') {
+            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index)) && input.charAt(index) != '=') {
                 temp += input.charAt(index);
                 index++;
             }
             checkForToken(temp);
         } else {
-            System.out.println("Char at index 3: " + input.charAt(index));
             throw new SyntaxErrorException("Expected data type keyword at index " + index);
         }
         skipForWhiteSpaces(input);
@@ -159,12 +144,10 @@ public class ForLoopParser {
     public void parseIdentifier(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-        System.out.println("Parsing identifier");
         // Gathers all letters to temp as long as current character is a
         // letter/digit/"_"
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
-            while (index < input.length()
-                    && (Character.isLetterOrDigit(input.charAt(index)) || input.charAt(index) == '_')) {
+            while (index < input.length() && (Character.isLetterOrDigit(input.charAt(index)) || input.charAt(index) == '_')) {
                 temp += input.charAt(index);
                 index++;
             }
@@ -181,7 +164,6 @@ public class ForLoopParser {
     public void parseNumber(String input) {
         String temp = "";
         skipForWhiteSpaces(input);
-        System.out.println("Parsing number");
         while (index < input.length() && Character.isDigit(input.charAt(index)) || input.charAt(index) == '.') {
             temp += input.charAt(index);
             index++;
@@ -197,7 +179,6 @@ public class ForLoopParser {
          * Sample a > b checking for a
          */
         skipForWhiteSpaces(input);
-        System.out.println("Parsing condition");
         if (Character.isLetter(input.charAt(index))) {
             parseIdentifier(input);
         } else if (Character.isDigit(input.charAt(index))) {
@@ -225,7 +206,6 @@ public class ForLoopParser {
     public void parseIncrementOrDecrement(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-        System.out.println("Parsing increment or decrement");
         if (Character.isLetter(input.charAt(index))) {
             parseIdentifier(input);
         }
@@ -241,12 +221,10 @@ public class ForLoopParser {
 
     }
 
-
     // Checks for the semicolon
     public void parseSemiColon(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-        System.out.println("Parsing semicolon");
         if (index < input.length() && input.charAt(index) == ';') {
             temp += input.charAt(index);
             index++;
@@ -339,8 +317,7 @@ public class ForLoopParser {
 
     public boolean isOperator(char character) {
         boolean isOperator = false;
-        if (character == '=' || character == '+' || character == '-' || character == '*' || character == '/'
-                || character == '%') {
+        if (character == '=' || character == '+' || character == '-' || character == '*' || character == '/' || character == '%') {
             isOperator = true;
         }
         return isOperator;
@@ -361,7 +338,8 @@ public class ForLoopParser {
             System.out.println(str);
         }
     }
-    public void clearResult(){
+
+    public void clearResult() {
         result.clear();
     }
 
