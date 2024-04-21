@@ -25,15 +25,14 @@
 
     
 public class ArithmeticParser {
-    private static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-    private static HashMap<String, String> map = new HashMap<String, String>();
-    private static ArrayList<String> result = new ArrayList<String>();
-    private static int index;
-    private static String input;
-    private static boolean hasDataType;
+    private HashMap<String, String> map = new HashMap<String, String>();
+    private ArrayList<String> result = new ArrayList<String>();
+    private int index;
+    private boolean hasDataType;
 
-    public ArithmeticParser(){
+    public ArithmeticParser(ArrayList result){
         setupHashMap();
+        this.result = result;
     }
     
      /*
@@ -44,7 +43,6 @@ public class ArithmeticParser {
      * | <identifier> = <expression>;
      */
     public int parseArithmetic(String input) throws SyntaxErrorException {
-        map.clear();
         String temp = "";
         index = 0;
         parseDataType(input);
@@ -93,9 +91,9 @@ public class ArithmeticParser {
         parseTerm(input);
 
         // Parses other terms
-        while (index < input.length()
-                && (input.charAt(index) == '+' || input.charAt(index) == '-' || input.charAt(index) == '%')) {
+        while (index < input.length() && (input.charAt(index) == '+' || input.charAt(index) == '-' || input.charAt(index) == '%')) {
             temp += input.charAt(index);
+            System.out.println("Value in temp must be Addition: "+temp);
             checkForToken(temp);
             index++;
             temp = "";
@@ -232,8 +230,7 @@ public class ArithmeticParser {
         skipForWhiteSpaces(input);
 
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
-            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index))
-                    && input.charAt(index) != '=') {
+            while (index < input.length() && Character.isLetterOrDigit(input.charAt(index)) && input.charAt(index) != '=') {
                 temp += input.charAt(index);
                 index++;
             }

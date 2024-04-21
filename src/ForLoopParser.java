@@ -1,66 +1,75 @@
-/*
- * Parses for
- * <for loop> =:: for(<assignment>;<condition>; <increment> | <decrement>) "{" {<arithmetic expression>} "}"
- *               |for(<assignment>;<condition>; <increment> | <decrement>) <arithmetic expression>
- * <assignment> =:: <data type> <identifier> = <digit>
- * <condition> =:: <identifier>|digit  <|>|==|>=|<= <identifier>|digit
- * <increment> =:: <digit>|<identifier> ++
- * <decrement> =:: <digit> | identifier> --
- * <digit> =:: 0|...|9
- * <identifier> =:: <letter> {<letter>}
- * <letter> =:: "a"|...|"Z"
- */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class ForLoopParser {
 
-    private  HashMap<String, String> map = new HashMap<String, String>();
-    private  ArrayList<String> result = new ArrayList<String>();
-    private  int index;
-    private  String input;
-    private  boolean hasDataType;
+    private HashMap<String, String> map = new HashMap<String, String>();
+    private ArrayList<String> result = new ArrayList<String>();
+    private int index;
+    private String input;
+    private boolean hasDataType;
     private ArithmeticParser arithmeticParser;
 
-
-    public ForLoopParser(){
+    public ForLoopParser() {
         setupHashMap();
-        arithmeticParser = new ArithmeticParser();
+        arithmeticParser = new ArithmeticParser(result);
     }
 
-    public void parseForLoop(String input) throws SyntaxErrorException{
+    public void parseForLoop(String input) throws SyntaxErrorException {
         String temp = "";
         index = 0;
+        System.out.println("Starting parseForLoop method");
         parseForKeyword(input);
 
-        if(index < input.length() && input.charAt(index) == '('){
+        if (index < input.length() && input.charAt(index) == '(') {
             temp = "(";
             checkForToken(temp);
             index++;
+
             parseAssignment(input);
             parseSemiColon(input);
             parseCondition(input);
             parseSemiColon(input);
             parseIncrementOrDecrement(input);
-            if(index < input.length() && input.charAt(index) == ')'){
+            if (index < input.length() && input.charAt(index) == ')') {
                 temp = ")";
                 checkForToken(temp);
                 index++;
+            } else {
+                throw new SyntaxErrorException("Expected ')' at index " + index);
             }
+        } else {
+            throw new SyntaxErrorException("Expected '(' at index " + index);
         }
-        
+
         skipForWhiteSpaces(input);
-        
+        System.out.println("After parsing assignment, condition, and increment/decrement");
+
         if (index < input.length() && input.charAt(index) == '{') {
             temp = "{";
             checkForToken(temp);
-            // Parse block
             index++;
+            skipForWhiteSpaces(input);
+
+            temp = "";
             while (index < input.length() && input.charAt(index) != '}') {
-                index += arithmeticParser.parseArithmetic(input)+1;
+                while (index < input.length() && input.charAt(index) != ';') {
+                    temp += input.charAt(index);
+                    System.out.println("Current characters in temp: " + temp);
+                    index++;
+                    System.out.println("Current index: " + index);
+                    System.out.println(temp);
+                }
+                if (input.charAt(index) == ';') {
+                    temp += input.charAt(index);
+                    arithmeticParser.parseArithmetic(temp);
+                    temp = "";
+                    index++;
+                }
+
             }
+            skipForWhiteSpaces(input);
             if (index < input.length() && input.charAt(index) == '}') {
                 temp = "}";
                 checkForToken(temp);
@@ -69,26 +78,46 @@ public class ForLoopParser {
                 throw new SyntaxErrorException("Expected '}' at index " + index);
             }
         } else {
-            // Single statement
-            index += arithmeticParser.parseArithmetic(input)+1;
+
+            temp = "";
+            while (index < input.length() && input.charAt(index) != '}') {
+                while (index < input.length() && input.charAt(index) != ';') {
+                    temp += input.charAt(index);
+                    System.out.println("Current characters in temp: " + temp);
+                    index++;
+                    System.out.println("Current index: " + index);
+                    System.out.println(temp);
+                }
+                if (input.charAt(index) == ';') {
+                    temp += input.charAt(index);
+                    arithmeticParser.parseArithmetic(temp);
+                    temp = "";
+                    index++;
+                }
+
+            }
         }
 
+        System.out.println("Finished parsing the for loop");
     }
+
     public void parseForKeyword(String input) throws SyntaxErrorException {
-        String temp = "";
         skipForWhiteSpaces(input);
+        System.out.println("Parsing for keyword");
         if (index < input.length() && input.substring(index, index + 3).equals("for")) {
-            temp = "for";
-            checkForToken(temp);
+            // checkForToken(temp);
+            result.add("for : Keyword");
             index += 3;
         } else {
             throw new SyntaxErrorException("Expected 'for' keyword at index " + index);
         }
         skipForWhiteSpaces(input);
     }
+
     public void parseAssignment(String input) throws SyntaxErrorException {
         // Implementation...
         String temp = "";
+        skipForWhiteSpaces(input);
         parseDataType(input);
         parseIdentifier(input);
         skipForWhiteSpaces(input);
@@ -100,15 +129,16 @@ public class ForLoopParser {
             index++;
             parseNumber(input);
         }
+        skipForWhiteSpaces(input);
     }
+
     /*
-     * Parses for:
-     * <data type> =:: "int" |... |"double"
+     * Parses for: <data type> =:: "int" |... |"double"
      */
     public void parseDataType(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-
+        System.out.println("Parsing data type");
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
             while (index < input.length() && Character.isLetterOrDigit(input.charAt(index))
                     && input.charAt(index) != '=') {
@@ -117,19 +147,19 @@ public class ForLoopParser {
             }
             checkForToken(temp);
         } else {
-            System.out.println("Char at index 3: "+input.charAt(index));
+            System.out.println("Char at index 3: " + input.charAt(index));
             throw new SyntaxErrorException("Expected data type keyword at index " + index);
         }
         skipForWhiteSpaces(input);
     }
+
     /*
-     * Parses for:
-     * <identifier> =:: <letter> {<letter>}
+     * Parses for: <identifier> =:: <letter> {<letter>}
      */
     public void parseIdentifier(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
-
+        System.out.println("Parsing identifier");
         // Gathers all letters to temp as long as current character is a
         // letter/digit/"_"
         if (index < input.length() && Character.isLetter(input.charAt(index))) {
@@ -144,14 +174,14 @@ public class ForLoopParser {
         }
         skipForWhiteSpaces(input);
     }
+
     /*
-     * Parses for:
-     * <number =:: <digit> {<digit>}[.<digit>]
+     * Parses for: <number =:: <digit> {<digit>}[.<digit>]
      */
     public void parseNumber(String input) {
         String temp = "";
         skipForWhiteSpaces(input);
-
+        System.out.println("Parsing number");
         while (index < input.length() && Character.isDigit(input.charAt(index)) || input.charAt(index) == '.') {
             temp += input.charAt(index);
             index++;
@@ -159,31 +189,33 @@ public class ForLoopParser {
         result.add(temp + " : " + identifyNumericType(temp));// Similar function to checkForToken()
         skipForWhiteSpaces(input);
     }
+
     public void parseCondition(String input) throws SyntaxErrorException {
-        String temp ="";
+        String temp = "";
 
         /*
-         * Sample a > b
-         * checking for a
+         * Sample a > b checking for a
          */
         skipForWhiteSpaces(input);
-        if(Character.isLetter(input.charAt(index))){
+        System.out.println("Parsing condition");
+        if (Character.isLetter(input.charAt(index))) {
             parseIdentifier(input);
-        }else if (Character.isDigit(input.charAt(index))){
+        } else if (Character.isDigit(input.charAt(index))) {
             parseNumber(input);
         }
 
-        //checking for >
+        // checking for >
         skipForWhiteSpaces(input);
-        while(index < input.length() && isConditional(input.charAt(index))){
-            temp += input.charAt(index);               
+        while (index < input.length() && isConditional(input.charAt(index))) {
+            temp += input.charAt(index);
+            index++;
         }
         checkForToken(temp);
 
-        //checking for b
-        if(Character.isLetter(input.charAt(index))){
+        // checking for b
+        if (Character.isLetter(input.charAt(index))) {
             parseIdentifier(input);
-        }else if (Character.isDigit(input.charAt(index))){
+        } else if (Character.isDigit(input.charAt(index))) {
             parseNumber(input);
         }
 
@@ -191,33 +223,30 @@ public class ForLoopParser {
     }
 
     public void parseIncrementOrDecrement(String input) throws SyntaxErrorException {
-        String temp="";
-        skipForWhiteSpaces(input);
-        if(Character.isLetter(input.charAt(index))){
-            parseIdentifier(input);
-        }
-        if(input.substring(index, index + 2).equals("++")){
-            temp ="++";
-            checkForToken(temp);
-            index+=2;
-        }else if(input.substring(index, index + 2).equals("--")){
-            temp ="--";
-            checkForToken(temp);
-            index+=2;
-        }
-
-        // Implementation...
-    }
-
-    public void parseArithmeticExpression(String input) throws SyntaxErrorException {
-        // Implementation...
-    }
-
-     // Checks for the semicolon
-     public void parseSemiColon(String input) throws SyntaxErrorException {
         String temp = "";
         skipForWhiteSpaces(input);
+        System.out.println("Parsing increment or decrement");
+        if (Character.isLetter(input.charAt(index))) {
+            parseIdentifier(input);
+        }
+        if (input.substring(index, index + 2).equals("++")) {
+            temp = "++";
+            checkForToken(temp);
+            index += 2;
+        } else if (input.substring(index, index + 2).equals("--")) {
+            temp = "--";
+            checkForToken(temp);
+            index += 2;
+        }
 
+    }
+
+
+    // Checks for the semicolon
+    public void parseSemiColon(String input) throws SyntaxErrorException {
+        String temp = "";
+        skipForWhiteSpaces(input);
+        System.out.println("Parsing semicolon");
         if (index < input.length() && input.charAt(index) == ';') {
             temp += input.charAt(index);
             index++;
@@ -227,13 +256,14 @@ public class ForLoopParser {
         }
         skipForWhiteSpaces(input);
     }
+
     public void skipForWhiteSpaces(String input) {
         while (index < input.length() && input.charAt(index) == ' ') {
             index++;
         }
     }
 
-     // Checks the input string if it matches one of the keys in the hashmap of
+    // Checks the input string if it matches one of the keys in the hashmap of
     // lexemes:tokens pairs
     public boolean checkForToken(String string) {
         boolean tokenMatch = false;
@@ -246,6 +276,7 @@ public class ForLoopParser {
         }
         return tokenMatch;
     }
+
     public void setupHashMap() {
 
         map.put("byte", "Keyword");
@@ -271,13 +302,14 @@ public class ForLoopParser {
         map.put(")", "Close Parenthesis");
         map.put("{", "Open Curly Braces");
         map.put("}", "Close Curly Braces");
-        map.put(">","Greater Than Sign");
-        map.put("<","Less Than Sign");
-        map.put(">=","Greater Than or Equal Siqn");
-        map.put("<=","Less Than or Equal Sign");
-        map.put("==","\"Is Equal To\" sign");
+        map.put(">", "Greater Than Sign");
+        map.put("<", "Less Than Sign");
+        map.put(">=", "Greater Than or Equal Sign");
+        map.put("<=", "Less Than or Equal Sign");
+        map.put("==", "\"Is Equal To\" sign");
         map.put(";", "Semicolon");
     }
+
     public String identifyNumericType(String str) {
         // Regular expressions to match different numeric types
         String byteRegex = "-?\\d+[bB]";
@@ -304,6 +336,7 @@ public class ForLoopParser {
             return "Not a numeric type";
         }
     }
+
     public boolean isOperator(char character) {
         boolean isOperator = false;
         if (character == '=' || character == '+' || character == '-' || character == '*' || character == '/'
@@ -313,19 +346,29 @@ public class ForLoopParser {
         return isOperator;
     }
 
-    public boolean isConditional(char character){
+    public boolean isConditional(char character) {
         boolean isConditional = false;
 
-        if(character == '>' || character == '<' || character =='='){
+        if (character == '>' || character == '<' || character == '=') {
             isConditional = true;
         }
         return isConditional;
     }
-    public void printTokens(){
+
+    public void printTokens() {
         System.out.println("\n----- Lexeme : Token Pairs -----\n");
-                for (String str : result) {
-                    System.out.println(str);
-                }
+        for (String str : result) {
+            System.out.println(str);
+        }
     }
-    
+    public void clearResult(){
+        result.clear();
+    }
+
+}
+
+class SyntaxErrorException extends Exception {
+    public SyntaxErrorException(String message) {
+        super(message);
+    }
 }
