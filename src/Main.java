@@ -2,7 +2,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 public class Main {
-    public static void main(String[] args) throws SyntaxErrorException {
+    public static void main(String[] args) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         ForLoopParser flParser = new ForLoopParser();
 
@@ -17,6 +17,7 @@ public class Main {
                 flParser.parseForLoop(input);
                 flParser.printTokens();
                 flParser.clearResult();
+                System.out.println("\nStatement is valid!");
             }catch(Exception e){
                 System.out.println("Invalid Input!\n"+e);
             }
